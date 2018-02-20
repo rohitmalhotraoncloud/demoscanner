@@ -52,8 +52,7 @@ public class TaskService implements ApplicationContextAware {
             int index = 0;
             for (String str : urls) {
                 index++;
-
-                if (index > 50) {
+                if (index > 30) {
                     break;
                 }
 
