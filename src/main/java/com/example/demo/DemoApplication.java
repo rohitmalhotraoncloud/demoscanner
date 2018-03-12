@@ -29,7 +29,7 @@ public class DemoApplication {
 	@Bean
 	public ThreadPoolTaskScheduler threadPoolTaskScheduler() {
         ThreadPoolTaskScheduler scheduler = new ThreadPoolTaskScheduler();
-        scheduler.setPoolSize(3);
+        scheduler.setPoolSize(10);
         scheduler.setWaitForTasksToCompleteOnShutdown(true);
         scheduler.setThreadNamePrefix("find_broken_url_thread");
         scheduler.initialize();

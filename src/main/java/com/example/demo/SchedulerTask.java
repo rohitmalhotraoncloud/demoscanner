@@ -3,6 +3,7 @@ package com.example.demo;
 import org.jsoup.Jsoup;
 import org.jsoup.nodes.Document;
 import org.jsoup.select.Elements;
+import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Component;
 import org.springframework.util.CollectionUtils;
 
@@ -10,6 +11,10 @@ import java.util.concurrent.Callable;
 
 @Component
 public class SchedulerTask implements Callable<UrlWrapper> {
+
+    @Autowired
+    SitedetailRepository siteDetailRepository;
+
     private String url;
 
     public String getUrl() {
@@ -24,25 +29,15 @@ public class SchedulerTask implements Callable<UrlWrapper> {
     public UrlWrapper call() {
         StatusCode statusCode = StatusCode.PENDING;
         try {
-            Document doc = Jsoup.connect(url).userAgent("Mozilla").ignoreHttpErrors(true).get();
-            if (doc.title().startsWith("Page not found")) {
-                statusCode = StatusCode.ERROR_404;
-            } else if (doc.title().startsWith("Unexpected error")) {
-                statusCode = StatusCode.ERROR_500;
-            }
-            Elements elems = doc.getElementsByClass("page-results-counter");
-            if (!CollectionUtils.isEmpty(elems)) {
-                if (elems.get(0).text().startsWith("(0 - 0")) {
-                    statusCode = StatusCode.NO_CONTENT;
-                }
-            }
-            if (statusCode == StatusCode.PENDING) {
-                statusCode = StatusCode.SUCCESS;
-            }
+            Document doc = JsoupUtil.parseUrl(url);
+            Sitedetail sd = new Sitedetail();
+            sd.setSourcedata(doc.html());
+            sd.setUrl(url);
+            siteDetailRepository.save(sd);
         } catch (Exception ex) {
-            System.out.println(ex.getMessage());
+            System.out.println(url + " : " + ex.getMessage());
         }
-        System.out.println("Current Thread : "+Thread.currentThread().getName());
+        //System.out.println("Current Thread : " + Thread.currentThread().getName());
         return new UrlWrapper(url, statusCode);
     }
 
